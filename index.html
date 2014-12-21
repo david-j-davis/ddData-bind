@@ -1,0 +1,140 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<!--[if lte IE 9]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+<![endif]--> 
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini Data Module by David Davis</title>
+    <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
+    <link rel="stylesheet" href="../assets/stylesheets/app-sub-pages.css" />
+    <script src="../assets/javascripts/vendor/handlebarsv2.0.0.js"></script>
+ 
+  </head>
+  <body>
+  <h2 class="forkTitle">Mini Data Module Case Study</h2>
+
+  <div id="container">
+    
+  <section class="binder-data">
+    
+     <script id="binder-template" type="text/x-handlebars-template"> 
+     <table class="binder-table">
+      <thead> 
+          <th>Apple </th> 
+          <th>Price/lb</th>  
+      </thead> 
+      <tbody> 
+          {{#each this}} 
+          <tr> 
+              <td>{{name}}</td>
+              <td class="binder-price">${{price}}</td>  
+          </tr> 
+          
+          {{/each}} 
+          <tr>
+              <td>Show Pricing</td>
+              <td id="toggle-price">
+                  <div class="onoffswitch">
+                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+                    <label class="onoffswitch-label" for="myonoffswitch">
+                        <span class="onoffswitch-inner"></span>
+                        <span class="onoffswitch-switch"></span>
+                    </label>
+                </div>
+              </td>
+          </tr>
+      </tbody> 
+    </table> 
+    </script>
+
+  </section>
+
+  <pre class="codeReveal"><code>
+    
+    var DataBinder = DataBinder || (function () {
+    'use strict';
+    var applePrices;
+
+    //Filter and sort options
+    function parseIt(obj1, obj2) {
+        var result = [];
+
+        // store extended/combined properties into new array
+        for (var key in obj1) {
+            if (!obj1.hasOwnProperty(key)) continue;
+
+            result.push({}, $.extend(obj1[key], obj2[key]));
+        }
+
+
+        // Sort by price highest to lowest
+        return filterIt(result).sort(function(a, b) {
+            return b.price - a.price;
+        });
+    }
+
+    //Filter values
+    function filterIt(apples) {
+        return apples.filter(function(option) {
+            return option.price || (option.is_default && !option.no_ui);
+        });
+    }
+
+    
+    //Main module function to display data
+    function startIt(dataA, dataB) {
+
+        dataA = JSON.parse(dataA);
+        dataB = JSON.parse(dataB);
+        /* NOTE 1: At this point what was a string value for dataA becomes a JavaScript obect (JSON) 
+        Observe: console.log(dataA); */
+
+        applePrices = parseIt(dataA.apples, dataB.apples);
+        /* Note 2: this function gets 16 parsed options and calls the filterOptions function to display highest to lowest price
+        console.log(options); */
+
+
+        //Display the data to the UI with Handlebarsjs
+        var source = $("#binder-template").html();
+        var template = Handlebars.compile(source); 
+        var data = template(applePrices); 
+
+        $(".binder-data").html(data);
+    }
+
+    return {
+        start: startIt
+    };
+})();
+</code></pre>
+<h3 class="codeTitle"><a href="">Click to view jQuery code</a></h3>
+
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script>window.jQuery || document.write('<script src="assets/javascripts/vendor/jquery-2.1.1.min.js"><\/script>')</script>
+<script src="../assets/javascripts/data/data_file_target.js"></script>
+<script src="../assets/javascripts/data/data_file_source.js"></script>
+<script src="../assets/javascripts/binder.js"></script>
+<script>
+    DataBinder.start(appledataA, appledataB);
+</script>
+<script src="../assets/javascripts/subpagescripts.js"></script>
+<script>
+
+
+    $('#toggle-price').on('click', function() {
+        // toggle price visibility
+
+       if ($('.binder-price').css('opacity') == '1') {
+            $('.binder-price').stop().css('opacity', '0');
+        } else if ($('.binder-price').css('opacity') == '0'){
+            $('.binder-price').stop().css('opacity', '1');
+        }
+
+    }); 
+
+</script>
+    
+</body>
+</html>
